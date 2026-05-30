@@ -26,3 +26,14 @@ npm run dev
 ## Deploy
 
 Set the same environment variables in Vercel and deploy this repository.
+
+Current Vercel project:
+
+- Production URL: https://resume-job-match-dashboard.vercel.app
+- Supabase project ref: `nkpyexpkszuuwmodshtv`
+- Required Vercel env vars:
+  - `NEXT_PUBLIC_SUPABASE_URL=https://nkpyexpkszuuwmodshtv.supabase.co`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Supabase publishable key>`
+  - `RAPIDAPI_KEY=<optional live job search key>`
+
+The database schema has already been applied to the Supabase project above. The app will show a setup screen until the publishable key is added to Vercel and the project is redeployed.
