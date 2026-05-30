@@ -4,6 +4,7 @@ export type ResumeAnalysis = {
   seniority_level: string;
   technologies: string[];
   leadership_experience: string[];
+  summary?: string;
 };
 
 export type JobMatch = {
@@ -24,4 +25,6 @@ export type AnalysisResponse = {
   analysis_id: string | null;
   resume_analysis: ResumeAnalysis;
   jobs: JobMatch[];
+  inserted_jobs?: number;
+  skipped_duplicates?: number;
 };

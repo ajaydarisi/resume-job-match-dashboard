@@ -41,7 +41,7 @@ const focusSkills = [
   "Microservices",
 ];
 
-type SourceJob = {
+export type SourceJob = {
   company: string;
   title: string;
   location: string;
@@ -246,14 +246,15 @@ export function scoreJobs(jobs: SourceJob[], resumeAnalysis: ResumeAnalysis): Jo
     .sort((a, b) => b.match_score - a.match_score);
 }
 
-export async function fetchLiveJobs(): Promise<SourceJob[]> {
+export async function fetchLiveJobs(preferredCities: string[] = ["Bengaluru"]): Promise<SourceJob[]> {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
     return curatedJobs;
   }
 
+  const cities = preferredCities.length ? preferredCities.join(" OR ") : "Bengaluru";
   const query = encodeURIComponent(
-    '"Software Engineer II" OR "Software Engineer III" OR "Senior Software Engineer" OR "Full Stack Engineer" React Next.js Node TypeScript PostgreSQL Bengaluru',
+    `("Software Engineer II" OR "Software Engineer III" OR "Senior Software Engineer" OR "Full Stack Engineer") React Next.js Node TypeScript PostgreSQL (${cities})`,
   );
   const response = await fetch(
     `https://jsearch.p.rapidapi.com/search?query=${query}&page=1&num_pages=1&country=in&date_posted=month`,
