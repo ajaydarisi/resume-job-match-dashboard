@@ -78,14 +78,14 @@ function averageScore(rows: Array<{ match_score: number }>) {
 
 function scoreTone(score: number) {
   if (score >= 90) {
-    return "border-emerald-400/35 bg-emerald-400/15 text-emerald-200";
+    return "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-400/15 dark:text-emerald-200";
   }
 
   if (score >= 75) {
-    return "border-amber-300/35 bg-amber-300/15 text-amber-200";
+    return "border-amber-500/35 bg-amber-500/10 text-amber-700 dark:border-amber-300/35 dark:bg-amber-300/15 dark:text-amber-200";
   }
 
-  return "border-slate-400/25 bg-slate-400/10 text-slate-200";
+  return "border-slate-500/25 bg-slate-500/10 text-slate-700 dark:border-slate-400/25 dark:bg-slate-400/10 dark:text-slate-200";
 }
 
 function formatDate(value?: string | null) {
@@ -221,6 +221,37 @@ function TopBar({ userEmail }: { userEmail?: string }) {
         </div>
       </div>
     </header>
+  );
+}
+
+function BottomNav({ activeView }: { activeView: WorkspaceDashboardProps["view"] }) {
+  const mobileItems = navItems.filter((item) =>
+    ["dashboard", "discovery", "tracker", "assistant", "settings"].includes(item.key),
+  );
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur-xl lg:hidden">
+      <div className="grid grid-cols-5 gap-1">
+        {mobileItems.map((item) => {
+          const Icon = item.icon;
+          const active = activeView === item.key || (activeView === "job-details" && item.key === "discovery");
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[0.68rem] font-medium transition-colors ${
+                active ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="max-w-full truncate">{item.label.replace("Job ", "").replace("AI ", "")}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -364,7 +395,7 @@ function DashboardOverview({
           </CardHeader>
           <CardContent>
             <div className="flex gap-3 rounded-lg border border-border bg-muted/40 p-4">
-              <Target className="mt-1 h-5 w-5 text-amber-200" />
+              <Target className="mt-1 h-5 w-5 text-amber-700 dark:text-amber-200" />
               <div>
                 <p className="font-semibold">Update profile signals</p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -405,7 +436,7 @@ function ResumeAnalysisPanel({ analysis }: { analysis: AnalysisRow | null }) {
           <h2 className="text-3xl font-semibold">Resume Analysis</h2>
           <p className="mt-1 text-muted-foreground">Advanced AI parsing and competitive benchmarking for senior roles.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <RefetchJobsButton />
           <Button variant="outline">
             <Download className="h-4 w-4" />
@@ -473,7 +504,7 @@ function ResumeAnalysisPanel({ analysis }: { analysis: AnalysisRow | null }) {
                 <div key={gap}>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{gap}</span>
-                    <span className={index === 0 ? "text-red-200" : index === 1 ? "text-amber-200" : "text-muted-foreground"}>
+                    <span className={index === 0 ? "text-red-700 dark:text-red-200" : index === 1 ? "text-amber-700 dark:text-amber-200" : "text-muted-foreground"}>
                       {index === 0 ? "High Impact" : index === 1 ? "Medium Impact" : "Optional"}
                     </span>
                   </div>
@@ -749,7 +780,7 @@ function AnalyticsPanel({ jobs, applications }: { jobs: JobRow[]; applications: 
   const statusCoverage = applications.length ? Math.round((applications.filter((item) => item.status !== "saved").length / applications.length) * 100) : 0;
 
   return (
-    <section id="analytics" className="space-y-6">
+    <section id="analytics" className="min-w-0 space-y-6">
       <div>
         <h2 className="text-3xl font-semibold">Career Analytics</h2>
         <p className="mt-1 text-muted-foreground">Long-term trends, salary benchmarks, and momentum tracking.</p>
@@ -759,7 +790,7 @@ function AnalyticsPanel({ jobs, applications }: { jobs: JobRow[]; applications: 
         <MetricCard label="Market Fit" value={`${avgMatch}%`} detail="Average job match" icon={Target} />
         <MetricCard label="AI Confidence" value={jobs.length ? "High" : "Pending"} detail="Based on latest profile" icon={Bot} />
       </div>
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Recent Recommendations</CardTitle>
           <CardDescription>Highest signal roles from the latest run.</CardDescription>
@@ -886,8 +917,8 @@ export function WorkspaceDashboard({
     dashboard: (
       <>
         <DashboardOverview analysis={analysis} jobs={jobs} applications={trackerApplications} />
-        <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
-          <Card>
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+          <Card className="min-w-0">
             <CardHeader>
               <CardTitle>Top Matching Companies</CardTitle>
               <CardDescription>Partner-style snapshot from the current recommendations.</CardDescription>
@@ -908,7 +939,9 @@ export function WorkspaceDashboard({
               ))}
             </CardContent>
           </Card>
-          <AnalyticsPanel jobs={jobs} applications={trackerApplications} />
+          <div className="min-w-0">
+            <AnalyticsPanel jobs={jobs} applications={trackerApplications} />
+          </div>
         </div>
       </>
     ),
@@ -925,9 +958,10 @@ export function WorkspaceDashboard({
     <div className="min-h-screen bg-background">
       <Sidebar activeView={view} />
       <TopBar userEmail={userEmail} />
-      <main className="space-y-12 px-4 py-6 lg:ml-72 lg:px-8">
+      <main className="min-w-0 space-y-12 px-4 pb-28 pt-6 lg:ml-72 lg:px-8 lg:pb-6">
         {content}
       </main>
+      <BottomNav activeView={view} />
     </div>
   );
 }
