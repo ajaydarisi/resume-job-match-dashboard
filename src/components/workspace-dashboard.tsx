@@ -19,13 +19,14 @@ import {
   Settings,
   Share2,
   Sparkles,
-  Sun,
   Target,
   Zap,
 } from "lucide-react";
 import type { ComponentType } from "react";
+import Link from "next/link";
 import { AnalyzePanel } from "@/components/analyze-panel";
 import { RefetchJobsButton } from "@/components/refetch-jobs-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,7 +156,7 @@ function Sidebar({ activeView }: { activeView: WorkspaceDashboardProps["view"] }
           const Icon = item.icon;
           const active = activeView === item.key || (activeView === "job-details" && item.key === "discovery");
           return (
-            <a
+            <Link
               key={item.label}
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
@@ -166,15 +167,15 @@ function Sidebar({ activeView }: { activeView: WorkspaceDashboardProps["view"] }
             >
               <Icon className="h-4 w-4" />
               <span>{item.label}</span>
-            </a>
+            </Link>
           );
         })}
       </nav>
       <Button asChild className="mb-4 w-full">
-        <a href="/resume-analysis">
+        <Link href="/resume-analysis">
           <Sparkles className="h-4 w-4" />
           New Application
-        </a>
+        </Link>
       </Button>
       <Separator className="mb-4" />
       <div className="space-y-1">
@@ -207,9 +208,7 @@ function TopBar({ userEmail }: { userEmail?: string }) {
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Theme">
-          <Sun className="h-4 w-4" />
-        </Button>
+        <ThemeToggle />
         <Separator orientation="vertical" className="hidden h-8 sm:block" />
         <div className="hidden items-center gap-3 sm:flex">
           <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">
@@ -326,7 +325,7 @@ function DashboardOverview({
               </p>
             </div>
             <Button asChild className="w-full">
-              <a href="/resume-analysis">View detailed analysis</a>
+              <Link href="/resume-analysis">View detailed analysis</Link>
             </Button>
           </CardContent>
         </Card>
@@ -573,9 +572,9 @@ function JobDiscovery({ jobs }: { jobs: JobRow[] }) {
                     <a href={job.apply_url} target="_blank" rel="noreferrer">Apply Now</a>
                   </Button>
                   <Button asChild variant="outline" size="icon">
-                    <a href={`/jobs/${job.id}`} aria-label="Open job">
+                    <Link href={`/jobs/${job.id}`} aria-label="Open job">
                       <ExternalLink className="h-4 w-4" />
-                    </a>
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -661,7 +660,7 @@ function JobDetailsPanel({ job, analysis }: { job: JobRow | undefined; analysis:
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <a href="/job-discovery">Back to discovery</a>
+            <Link href="/job-discovery">Back to discovery</Link>
           </Button>
           <Button asChild>
             <a href={selectedJob.apply_url} target="_blank" rel="noreferrer">
@@ -789,9 +788,9 @@ function AnalyticsPanel({ jobs, applications }: { jobs: JobRow[]; applications: 
                   </TableCell>
                   <TableCell>
                     <Button asChild variant="ghost" size="icon">
-                      <a href={`/jobs/${job.id}`} aria-label={`Open ${job.title}`}>
+                      <Link href={`/jobs/${job.id}`} aria-label={`Open ${job.title}`}>
                         <ChevronRight className="h-4 w-4" />
-                      </a>
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -895,7 +894,7 @@ export function WorkspaceDashboard({
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
               {jobs.slice(0, 4).map((job) => (
-                <a
+                <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
                   className="rounded-lg border border-border bg-muted/35 p-4 transition hover:bg-muted/55"
@@ -905,7 +904,7 @@ export function WorkspaceDashboard({
                   </div>
                   <p className="mt-3 font-medium">{job.company}</p>
                   <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{job.match_score}% match</p>
-                </a>
+                </Link>
               ))}
             </CardContent>
           </Card>
