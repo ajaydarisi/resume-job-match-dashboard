@@ -4,12 +4,12 @@ import { getWorkspaceData } from "@/lib/workspace-data";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-  const data = await getWorkspaceData();
+export default async function JobDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [{ id }, data] = await Promise.all([params, getWorkspaceData()]);
 
   if (data.configured && !data.authenticated) {
     redirect("/auth/login");
   }
 
-  return <WorkspaceDashboard {...data} view="dashboard" />;
+  return <WorkspaceDashboard {...data} selectedJobId={id} view="job-details" />;
 }

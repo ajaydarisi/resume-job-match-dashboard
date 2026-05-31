@@ -41,6 +41,8 @@ const focusSkills = [
   "Microservices",
 ];
 
+const JOB_FETCH_TIMEOUT_MS = 8_000;
+
 export type SourceJob = {
   company: string;
   title: string;
@@ -264,10 +266,11 @@ export async function fetchLiveJobs(preferredCities: string[] = ["Bengaluru"]): 
         "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
       },
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(JOB_FETCH_TIMEOUT_MS),
     },
-  );
+  ).catch(() => null);
 
-  if (!response.ok) {
+  if (!response?.ok) {
     return curatedJobs;
   }
 

@@ -7,7 +7,17 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const formData = await request.formData();
+  let formData: FormData;
+
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json(
+      { error: "Send the resume and profile fields as multipart/form-data." },
+      { status: 400 },
+    );
+  }
+
   const resumeFile = formData.get("resume");
   const name = String(formData.get("name") ?? "").trim();
   const mobile = String(formData.get("mobile") ?? "").trim();
@@ -114,6 +124,28 @@ export async function POST(request: Request) {
 
   if (jobsError) {
     return NextResponse.json({ error: jobsError.message }, { status: 500 });
+  }
+
+  if (newJobs.length) {
+    const { error: applicationsError } = await supabase.from("applications").insert(
+      newJobs.map((job) => ({
+        analysis_id: analysis.id,
+        user_id: user.id,
+        company: job.company,
+        title: job.title,
+        location: job.location,
+        salary: job.salary,
+        match_score: job.match_score,
+        apply_url: job.apply_url,
+        priority: job.match_score >= 90 ? "high" : job.match_score < 70 ? "low" : "normal",
+        next_action: job.match_score >= 90 ? "Apply while the match is hot" : "Review fit and tailor resume",
+        raw_payload: job,
+      })),
+    );
+
+    if (applicationsError) {
+      return NextResponse.json({ error: applicationsError.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({

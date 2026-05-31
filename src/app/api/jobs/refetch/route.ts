@@ -85,6 +85,28 @@ export async function POST() {
     return NextResponse.json({ error: jobsError.message }, { status: 500 });
   }
 
+  if (newJobs.length) {
+    const { error: applicationsError } = await supabase.from("applications").insert(
+      newJobs.map((job) => ({
+        analysis_id: latestAnalysis.id,
+        user_id: user.id,
+        company: job.company,
+        title: job.title,
+        location: job.location,
+        salary: job.salary,
+        match_score: job.match_score,
+        apply_url: job.apply_url,
+        priority: job.match_score >= 90 ? "high" : job.match_score < 70 ? "low" : "normal",
+        next_action: job.match_score >= 90 ? "Apply while the match is hot" : "Review fit and tailor resume",
+        raw_payload: job,
+      })),
+    );
+
+    if (applicationsError) {
+      return NextResponse.json({ error: applicationsError.message }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({
     jobs,
     inserted_jobs: newJobs.length,

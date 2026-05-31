@@ -1,4 +1,4 @@
-import { fetchLiveJobs, scoreJobs } from "@/lib/analyzer";
+import { analyzeResume, fetchLiveJobs, scoreJobs } from "@/lib/analyzer";
 import type { JobMatch, ResumeAnalysis } from "@/lib/types";
 
 type OllamaChatResponse = {
@@ -13,6 +13,10 @@ type CandidateContext = {
   preferredCities: string[];
   resumeText: string;
 };
+
+const RESUME_PROMPT_LIMIT = 12_000;
+const OLLAMA_ANALYSIS_TIMEOUT_MS = 25_000;
+const OLLAMA_RERANK_TIMEOUT_MS = 12_000;
 
 function getOllamaConfig() {
   const apiKey = process.env.OLLAMA_API_KEY;
@@ -38,27 +42,38 @@ function extractJsonObject(content: string) {
   return JSON.parse(raw.slice(start, end + 1)) as unknown;
 }
 
-async function ollamaJson(prompt: string) {
+async function ollamaJson(prompt: string, timeoutMs: number) {
   const { apiKey, model } = getOllamaConfig();
-  const response = await fetch("https://ollama.com/api/chat", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      stream: false,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a precise recruiting analyst. Return only valid JSON. Do not include markdown, comments, or prose outside JSON.",
-        },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch("https://ollama.com/api/chat", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+      body: JSON.stringify({
+        model,
+        stream: false,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a precise recruiting analyst. Return only valid JSON. Do not include markdown, comments, or prose outside JSON.",
+          },
+          { role: "user", content: prompt },
+        ],
+      }),
+    });
+  } catch (error) {
+    if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
+      throw new Error(`Ollama Cloud request timed out after ${Math.round(timeoutMs / 1000)} seconds.`);
+    }
+
+    throw error;
+  }
 
   if (!response.ok) {
     const detail = await response.text();
@@ -131,7 +146,9 @@ function normaliseJobs(value: unknown): JobMatch[] {
 }
 
 export async function analyzeResumeWithOllama(context: CandidateContext) {
-  const result = await ollamaJson(`Analyze this resume for software engineering jobs.
+  try {
+    const result = await ollamaJson(
+      `Analyze this resume for software engineering jobs.
 
 Candidate:
 - Name: ${context.name}
@@ -149,9 +166,15 @@ Return JSON with this exact shape:
 }
 
 Resume:
-${context.resumeText.slice(0, 60000)}`);
+${context.resumeText.slice(0, RESUME_PROMPT_LIMIT)}`,
+      OLLAMA_ANALYSIS_TIMEOUT_MS,
+    );
 
-  return normaliseAnalysis(result);
+    return normaliseAnalysis(result);
+  } catch (error) {
+    console.warn(error instanceof Error ? error.message : "Ollama resume analysis failed.");
+    return analyzeResume(context.resumeText);
+  }
 }
 
 export async function findJobsWithOllama(resumeAnalysis: ResumeAnalysis, preferredCities: string[]) {
@@ -168,7 +191,9 @@ Missing skills from first pass: ${job.missing_skills.join(", ") || "none"}`,
     )
     .join("\n\n");
 
-  const result = await ollamaJson(`Rank and improve these job matches for the candidate.
+  try {
+    const result = await ollamaJson(
+      `Rank and improve these job matches for the candidate.
 
 Resume analysis JSON:
 ${JSON.stringify(resumeAnalysis)}
@@ -202,8 +227,14 @@ Rules:
 - Prefer the user's preferred cities.
 - Preserve real apply URLs from the candidate jobs when available.
 - Do not invent impossible salaries; use "Not disclosed" when unknown.
-- Give recruiter/contact suggestions via email or LinkedIn search URL.`);
+- Give recruiter/contact suggestions via email or LinkedIn search URL.`,
+      OLLAMA_RERANK_TIMEOUT_MS,
+    );
 
-  const jobs = normaliseJobs(result);
-  return jobs.length ? jobs : fallbackJobs;
+    const jobs = normaliseJobs(result);
+    return jobs.length ? jobs : fallbackJobs;
+  } catch (error) {
+    console.warn(error instanceof Error ? error.message : "Ollama job ranking failed.");
+    return fallbackJobs;
+  }
 }

@@ -4,12 +4,12 @@ import { getWorkspaceData } from "@/lib/workspace-data";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function ResumeAnalysisPage() {
   const data = await getWorkspaceData();
 
   if (data.configured && !data.authenticated) {
     redirect("/auth/login");
   }
 
-  return <WorkspaceDashboard {...data} view="dashboard" />;
+  return <WorkspaceDashboard {...data} view="resume" />;
 }

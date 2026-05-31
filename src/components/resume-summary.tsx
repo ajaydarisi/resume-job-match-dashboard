@@ -1,3 +1,7 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
 type Analysis = {
   candidate_name: string | null;
   mobile_number: string | null;
@@ -17,44 +21,62 @@ export function ResumeSummary({ analysis }: { analysis: Analysis | null }) {
 
   return (
     <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-      <div className="rounded-lg border border-white/10 bg-white/[0.055] p-4">
-        <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Profile</p>
-        <p className="mt-2 text-2xl font-semibold text-white">
-          {analysis.candidate_name ?? "Candidate"}
-        </p>
-        <p className="mt-2 text-sm text-slate-300">{analysis.mobile_number ?? "Mobile not provided"}</p>
-        <p className="mt-3 text-xs uppercase tracking-[0.14em] text-slate-400">Experience</p>
-        <p className="mt-2 text-2xl font-semibold text-white">{analysis.years_of_experience}</p>
-        <p className="mt-3 text-sm leading-6 text-slate-300">{analysis.seniority_level}</p>
-      </div>
-      <div className="rounded-lg border border-white/10 bg-white/[0.055] p-4">
-        <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Leadership</p>
-        <div className="mt-3 space-y-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-2xl font-semibold">{analysis.candidate_name ?? "Candidate"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {analysis.mobile_number ?? "Mobile not provided"}
+            </p>
+          </div>
+          <Separator />
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Experience</p>
+            <p className="mt-2 text-2xl font-semibold">{analysis.years_of_experience}</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{analysis.seniority_level}</p>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Leadership</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
           {analysis.leadership_experience.map((item) => (
-            <p key={item} className="text-sm leading-6 text-slate-200">
+            <p key={item} className="text-sm leading-6 text-muted-foreground">
               {item}
             </p>
           ))}
-        </div>
-      </div>
-      <div className="rounded-lg border border-white/10 bg-white/[0.055] p-4 lg:col-span-2">
-        <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Preferred Cities</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {analysis.preferred_cities.map((city) => (
-            <span key={city} className="rounded-md bg-cyan-300/15 px-2.5 py-1.5 text-sm text-cyan-100">
-              {city}
-            </span>
-          ))}
-        </div>
-        <p className="mt-5 text-xs uppercase tracking-[0.14em] text-slate-400">Technologies</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {analysis.technologies.map((technology) => (
-            <span key={technology} className="rounded-md bg-white/10 px-2.5 py-1.5 text-sm text-slate-100">
-              {technology}
-            </span>
-          ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Profile signals</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Preferred cities</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {analysis.preferred_cities.map((city) => (
+                <Badge key={city}>{city}</Badge>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Technologies</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {analysis.technologies.map((technology) => (
+                <Badge key={technology} variant="secondary">
+                  {technology}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

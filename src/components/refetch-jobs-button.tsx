@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { AnalysisResponse } from "@/lib/types";
 
 export function RefetchJobsButton() {
@@ -29,16 +30,11 @@ export function RefetchJobsButton() {
 
   return (
     <div className="flex flex-col gap-2 sm:items-end">
-      <button
-        type="button"
-        onClick={refetchJobs}
-        disabled={loading}
-        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-4 text-sm font-semibold text-slate-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="button" onClick={refetchJobs} disabled={loading} variant="outline">
         <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         {loading ? "Refetching" : "Refetch jobs"}
-      </button>
-      {message ? <p className="max-w-xs text-right text-xs text-slate-300">{message}</p> : null}
+      </Button>
+      {message ? <p className="max-w-xs text-right text-xs text-muted-foreground">{message}</p> : null}
     </div>
   );
 }
